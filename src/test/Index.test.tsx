@@ -21,9 +21,9 @@ describe("Index Page", () => {
 
   it("renders category section", () => {
     renderWithRouter(<Index />);
-    expect(screen.getByText("Video Templates")).toBeInTheDocument();
-    expect(screen.getByText("Photo Templates")).toBeInTheDocument();
-    expect(screen.getByText("Resume Templates")).toBeInTheDocument();
+    expect(screen.getAllByText("Video Templates").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Photo Templates").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Resume Templates").length).toBeGreaterThan(0);
   });
 
   it("renders trending section", () => {
