@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -12,18 +13,33 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { signIn, signInWithGoogle } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({ title: "Please fill in all fields", variant: "destructive" });
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await signIn(email, password);
       toast({ title: "Welcome back!", description: "You've been logged in successfully." });
-    }, 1200);
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({ title: "Login failed", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error: any) {
+      toast({ title: "Google login failed", description: error.message, variant: "destructive" });
+    }
   };
 
   return (
@@ -65,8 +81,7 @@ const Login = () => {
           <h1 className="text-2xl font-display font-bold text-foreground mb-2">Log in to your account</h1>
           <p className="text-muted-foreground mb-8">Enter your credentials to continue creating.</p>
 
-          {/* Google button */}
-          <Button variant="outline" className="w-full mb-6 h-11" type="button">
+          <Button variant="outline" className="w-full mb-6 h-11" type="button" onClick={handleGoogleLogin}>
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -88,38 +103,14 @@ const Login = () => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="Email address"
-                className="pl-10 h-11"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <Input type="email" placeholder="Email address" className="pl-10 h-11" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                className="pl-10 pr-10 h-11"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
+              <Input type={showPassword ? "text" : "password"} placeholder="Password" className="pl-10 pr-10 h-11" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-muted-foreground">
-                <input type="checkbox" className="rounded border-border" />
-                Remember me
-              </label>
-              <span className="text-primary cursor-pointer hover:underline">Forgot password?</span>
             </div>
 
             <Button type="submit" className="w-full h-11" disabled={loading}>
