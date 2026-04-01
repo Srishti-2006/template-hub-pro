@@ -59,18 +59,21 @@ export type Database = {
           Text: string
           Thumbnail: string
           Title: string
+          "user-id": string | null
         }
         Insert: {
           Id?: string
           Text: string
           Thumbnail: string
           Title: string
+          "user-id"?: string | null
         }
         Update: {
           Id?: string
           Text?: string
           Thumbnail?: string
           Title?: string
+          "user-id"?: string | null
         }
         Relationships: []
       }

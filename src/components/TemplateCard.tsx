@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Heart, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface TemplateCardProps {
   title: string;
@@ -11,6 +12,8 @@ interface TemplateCardProps {
 }
 
 const TemplateCard = ({ title, category, image, likes = 0, views = 0 }: TemplateCardProps) => {
+  const navigate = useNavigate();
+
   return (
     <motion.div
       whileHover={{ y: -6 }}
@@ -26,9 +29,6 @@ const TemplateCard = ({ title, category, image, likes = 0, views = 0 }: Template
         />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Button size="sm" className="text-xs">
-            Use Template
-          </Button>
           <div className="flex gap-2">
             <button className="w-8 h-8 rounded-full glass-surface flex items-center justify-center">
               <Heart className="w-3.5 h-3.5 text-primary-foreground" />
@@ -43,6 +43,13 @@ const TemplateCard = ({ title, category, image, likes = 0, views = 0 }: Template
           <span className="flex items-center gap-1"><Heart className="w-3 h-3" />{likes}</span>
           <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{views}</span>
         </div>
+        <Button
+          size="sm"
+          className="w-full mt-3 text-xs"
+          onClick={() => navigate("/editor")}
+        >
+          Use Template
+        </Button>
       </div>
     </motion.div>
   );
