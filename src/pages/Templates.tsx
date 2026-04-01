@@ -42,10 +42,32 @@ const Templates = () => {
   const [searchParams] = useSearchParams();
   const catParam = searchParams.get("cat") || "all";
   const [activeTab, setActiveTab] = useState(catParam);
+  const [templates, setTemplates] = useState(fallbackTemplates);
+
+  useEffect(() => {
+    const getTemplates = async () => {
+      const { data, error } = await supabase
+        .from('Templates')
+        .select('*');
+      if (error) {
+        console.log(error);
+      } else if (data && data.length > 0) {
+        const mapped = data.map((t) => ({
+          title: t.Title,
+          category: "video" as string,
+          image: t.Thumbnail,
+          likes: 0,
+          views: 0,
+        }));
+        setTemplates(mapped);
+      }
+    };
+    getTemplates();
+  }, []);
 
   const filtered = activeTab === "all"
-    ? allTemplates
-    : allTemplates.filter((t) => t.category === activeTab);
+    ? templates
+    : templates.filter((t) => t.category === activeTab);
 
   return (
     <div className="min-h-screen bg-background">
