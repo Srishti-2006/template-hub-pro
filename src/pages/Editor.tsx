@@ -256,8 +256,11 @@ const Editor = () => {
             {elements.map((el) => {
               const isSelected = el.id === selectedId;
               return (
-                <div
+                <motion.div
                   key={el.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: el.opacity ?? 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
                   onMouseDown={(e) => handleCanvasMouseDown(e, el.id)}
                   className={`absolute cursor-move ${isSelected ? "ring-2 ring-primary ring-offset-2" : ""}`}
                   style={{
@@ -265,7 +268,6 @@ const Editor = () => {
                     top: el.y,
                     width: el.width,
                     height: el.height,
-                    opacity: el.opacity ?? 1,
                   }}
                 >
                   {el.type === "text" && (
@@ -294,13 +296,21 @@ const Editor = () => {
                     <div className="w-full h-full rounded-full" style={{ backgroundColor: el.color }} />
                   )}
                   {el.type === "image" && el.src && (
-                    <img src={el.src} alt="" className="w-full h-full object-cover rounded-lg" draggable={false} />
+                    <motion.img
+                      src={el.src}
+                      alt=""
+                      className="w-full h-full object-cover rounded-lg"
+                      draggable={false}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                    />
                   )}
                   {/* Resize handle */}
                   {isSelected && (
                     <div className="absolute -right-1.5 -bottom-1.5 w-3 h-3 rounded-full bg-primary border-2 border-card cursor-se-resize" />
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
