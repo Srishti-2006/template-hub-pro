@@ -206,7 +206,7 @@ const ResumeBuilder = () => {
 
   // Preview panel
   const PreviewPanel = () => (
-    <div className="bg-card rounded-xl border border-border/50 card-shadow p-8 md:p-10 max-w-2xl mx-auto">
+    <div id="resume" className="bg-card rounded-xl border border-border/50 card-shadow p-8 md:p-10 max-w-2xl mx-auto">
       {/* Header */}
       <div className="border-b-2 border-primary pb-6 mb-6">
         <h1 className="text-3xl font-display font-bold text-foreground">{data.name || "Your Name"}</h1>
