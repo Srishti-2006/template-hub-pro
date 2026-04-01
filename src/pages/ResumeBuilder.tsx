@@ -113,6 +113,16 @@ const ResumeBuilder = () => {
   };
 
   const handleExport = () => {
+    const element = document.getElementById("resume");
+    if (!element) return;
+    const opt = {
+      margin: 0.5,
+      filename: `${data.name || "resume"}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    };
+    html2pdf().set(opt).from(element).save();
     toast({ title: "Resume exported!", description: "Your resume has been downloaded as PDF." });
   };
 
