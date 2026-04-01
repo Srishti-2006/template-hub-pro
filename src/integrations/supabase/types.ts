@@ -53,6 +53,27 @@ export type Database = {
         }
         Relationships: []
       }
+      Templates: {
+        Row: {
+          Id: string
+          Text: string
+          Thumbnail: string
+          Title: string
+        }
+        Insert: {
+          Id?: string
+          Text: string
+          Thumbnail: string
+          Title: string
+        }
+        Update: {
+          Id?: string
+          Text?: string
+          Thumbnail?: string
+          Title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

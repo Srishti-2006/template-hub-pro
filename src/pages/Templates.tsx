@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TemplateCard from "@/components/TemplateCard";
+import { supabase } from "@/integrations/supabase/client";
+
+// Fallback local templates
 import templateBirthday from "@/assets/template-birthday.jpg";
 import templateTravel from "@/assets/template-travel.jpg";
 import templateSocial from "@/assets/template-social.jpg";
@@ -12,7 +15,7 @@ import templatePromo from "@/assets/template-promo.jpg";
 import templateSlideshow from "@/assets/template-slideshow.jpg";
 import templateThumbnail from "@/assets/template-thumbnail.jpg";
 
-const allTemplates = [
+const fallbackTemplates = [
   { title: "Birthday Celebration", category: "video", image: templateBirthday, likes: 2340, views: 12500 },
   { title: "Adventure Travel Reel", category: "video", image: templateTravel, likes: 1890, views: 9800 },
   { title: "Product Promo", category: "video", image: templatePromo, likes: 1560, views: 8700 },
@@ -39,10 +42,32 @@ const Templates = () => {
   const [searchParams] = useSearchParams();
   const catParam = searchParams.get("cat") || "all";
   const [activeTab, setActiveTab] = useState(catParam);
+  const [templates, setTemplates] = useState(fallbackTemplates);
+
+  useEffect(() => {
+    const getTemplates = async () => {
+      const { data, error } = await supabase
+        .from('Templates')
+        .select('*');
+      if (error) {
+        console.log(error);
+      } else if (data && data.length > 0) {
+        const mapped = data.map((t) => ({
+          title: t.Title,
+          category: "video" as string,
+          image: t.Thumbnail,
+          likes: 0,
+          views: 0,
+        }));
+        setTemplates(mapped);
+      }
+    };
+    getTemplates();
+  }, []);
 
   const filtered = activeTab === "all"
-    ? allTemplates
-    : allTemplates.filter((t) => t.category === activeTab);
+    ? templates
+    : templates.filter((t) => t.category === activeTab);
 
   return (
     <div className="min-h-screen bg-background">
