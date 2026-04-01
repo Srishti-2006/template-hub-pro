@@ -310,7 +310,7 @@ const Editor = () => {
                   {isSelected && (
                     <div className="absolute -right-1.5 -bottom-1.5 w-3 h-3 rounded-full bg-primary border-2 border-card cursor-se-resize" />
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
