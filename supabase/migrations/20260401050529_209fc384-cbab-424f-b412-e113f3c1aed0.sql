@@ -1,0 +1,1 @@
+CREATE POLICY "Anyone can read templates" ON public."Templates" FOR SELECT TO anon, authenticated USING (true);
