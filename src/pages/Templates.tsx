@@ -53,6 +53,7 @@ const Templates = () => {
         console.log(error);
       } else if (data && data.length > 0) {
         const mapped = data.map((t) => ({
+          id: t.Id,
           title: t.Title,
           category: "video" as string,
           image: t.Thumbnail,

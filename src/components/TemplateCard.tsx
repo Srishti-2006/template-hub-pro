@@ -54,7 +54,7 @@ const TemplateCard = ({ id, title, category, image, likes = 0, views = 0 }: Temp
         <Button
           size="sm"
           className="w-full mt-3 text-xs"
-          onClick={() => navigate("/editor")}
+          onClick={handleUseTemplate}
         >
           Use Template
         </Button>
