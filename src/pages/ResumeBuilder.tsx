@@ -15,6 +15,7 @@ import {
   Plus,
   Trash2,
   Edit3,
+  Layout,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +49,15 @@ interface ResumeData {
   education: Education[];
 }
 
+type TemplateStyle = "classic" | "modern" | "minimal" | "creative";
+
+const templateMeta: { key: TemplateStyle; label: string; desc: string }[] = [
+  { key: "classic", label: "Classic", desc: "Traditional top-down layout with accent borders" },
+  { key: "modern", label: "Modern", desc: "Two-column layout with a colored sidebar" },
+  { key: "minimal", label: "Minimal", desc: "Clean & airy with subtle typography" },
+  { key: "creative", label: "Creative", desc: "Bold header with gradient accent bar" },
+];
+
 const initialData: ResumeData = {
   name: "Alex Johnson",
   title: "Senior Product Designer",
@@ -65,10 +75,167 @@ const initialData: ResumeData = {
   ],
 };
 
+/* ─── Contact Row (reused) ─── */
+const ContactRow = ({ data }: { data: ResumeData }) => (
+  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+    {data.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />{data.email}</span>}
+    {data.phone && <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{data.phone}</span>}
+    {data.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{data.location}</span>}
+  </div>
+);
+
+/* ─── Skills list (reused) ─── */
+const SkillsList = ({ skills, variant = "pill" }: { skills: string[]; variant?: "pill" | "inline" | "bar" }) => {
+  if (skills.length === 0) return null;
+  if (variant === "inline") return <p className="text-sm text-muted-foreground">{skills.join(" · ")}</p>;
+  if (variant === "bar") return (
+    <div className="flex flex-wrap gap-2">
+      {skills.map((s, i) => (
+        <span key={i} className="px-2 py-0.5 text-xs font-semibold rounded bg-accent text-accent-foreground">{s}</span>
+      ))}
+    </div>
+  );
+  return (
+    <div className="flex flex-wrap gap-2">
+      {skills.map((s, i) => (
+        <span key={i} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">{s}</span>
+      ))}
+    </div>
+  );
+};
+
+/* ─── Experience block (reused) ─── */
+const ExperienceBlock = ({ experience }: { experience: Experience[] }) => {
+  if (experience.length === 0) return null;
+  return (
+    <>
+      {experience.map((exp) => (
+        <div key={exp.id} className="mb-4 last:mb-0">
+          <div className="flex justify-between items-baseline">
+            <h3 className="font-display font-semibold text-foreground text-sm">{exp.title}</h3>
+            <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">{exp.period}</span>
+          </div>
+          <p className="text-sm text-primary font-medium">{exp.company}</p>
+          {exp.description && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{exp.description}</p>}
+        </div>
+      ))}
+    </>
+  );
+};
+
+/* ─── Education block (reused) ─── */
+const EducationBlock = ({ education }: { education: Education[] }) => {
+  if (education.length === 0) return null;
+  return (
+    <>
+      {education.map((ed) => (
+        <div key={ed.id} className="mb-3 last:mb-0">
+          <div className="flex justify-between items-baseline">
+            <h3 className="font-display font-semibold text-foreground text-sm">{ed.degree}</h3>
+            <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">{ed.period}</span>
+          </div>
+          <p className="text-sm text-muted-foreground">{ed.school}</p>
+        </div>
+      ))}
+    </>
+  );
+};
+
+/* ─── Section heading helper ─── */
+const SectionHeading = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <h2 className={`text-sm font-display font-bold text-foreground uppercase tracking-wider mb-2 ${className}`}>{children}</h2>
+);
+
+/* ═══════════════════════════════════════════════════
+   TEMPLATE PREVIEWS
+   ═══════════════════════════════════════════════════ */
+
+const ClassicPreview = ({ data }: { data: ResumeData }) => (
+  <div className="bg-card rounded-xl border border-border/50 card-shadow p-8 md:p-10 max-w-2xl mx-auto">
+    <div className="border-b-2 border-primary pb-6 mb-6">
+      <h1 className="text-3xl font-display font-bold text-foreground">{data.name || "Your Name"}</h1>
+      <p className="text-lg text-primary font-medium mt-1">{data.title || "Job Title"}</p>
+      <div className="mt-3"><ContactRow data={data} /></div>
+    </div>
+    {data.summary && <div className="mb-6"><SectionHeading>Summary</SectionHeading><p className="text-sm text-muted-foreground leading-relaxed">{data.summary}</p></div>}
+    {data.skills.length > 0 && <div className="mb-6"><SectionHeading>Skills</SectionHeading><SkillsList skills={data.skills} /></div>}
+    {data.experience.length > 0 && <div className="mb-6"><SectionHeading>Experience</SectionHeading><ExperienceBlock experience={data.experience} /></div>}
+    {data.education.length > 0 && <div><SectionHeading>Education</SectionHeading><EducationBlock education={data.education} /></div>}
+  </div>
+);
+
+const ModernPreview = ({ data }: { data: ResumeData }) => (
+  <div className="bg-card rounded-xl border border-border/50 card-shadow max-w-2xl mx-auto overflow-hidden flex flex-col md:flex-row">
+    {/* Sidebar */}
+    <div className="md:w-[200px] bg-primary/10 p-6 flex-shrink-0 space-y-5">
+      <div>
+        <h1 className="text-xl font-display font-bold text-foreground leading-tight">{data.name || "Your Name"}</h1>
+        <p className="text-xs text-primary font-semibold mt-1 uppercase tracking-wider">{data.title}</p>
+      </div>
+      <div className="space-y-2 text-xs text-muted-foreground">
+        {data.email && <p className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-primary" />{data.email}</p>}
+        {data.phone && <p className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-primary" />{data.phone}</p>}
+        {data.location && <p className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-primary" />{data.location}</p>}
+      </div>
+      {data.skills.length > 0 && <div><SectionHeading>Skills</SectionHeading><SkillsList skills={data.skills} variant="bar" /></div>}
+      {data.education.length > 0 && <div><SectionHeading>Education</SectionHeading><EducationBlock education={data.education} /></div>}
+    </div>
+    {/* Main */}
+    <div className="flex-1 p-6 md:p-8 space-y-5">
+      {data.summary && <div><SectionHeading>Profile</SectionHeading><p className="text-sm text-muted-foreground leading-relaxed">{data.summary}</p></div>}
+      {data.experience.length > 0 && <div><SectionHeading>Experience</SectionHeading><ExperienceBlock experience={data.experience} /></div>}
+    </div>
+  </div>
+);
+
+const MinimalPreview = ({ data }: { data: ResumeData }) => (
+  <div className="bg-card rounded-xl border border-border/50 card-shadow p-8 md:p-10 max-w-2xl mx-auto">
+    <div className="text-center mb-8">
+      <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">{data.name || "Your Name"}</h1>
+      <p className="text-sm text-muted-foreground mt-1">{data.title}</p>
+      <div className="mt-2 justify-center"><ContactRow data={data} /></div>
+    </div>
+    {data.summary && <div className="mb-6"><p className="text-sm text-muted-foreground leading-relaxed text-center italic">{data.summary}</p></div>}
+    <hr className="border-border mb-6" />
+    {data.skills.length > 0 && <div className="mb-6"><SectionHeading className="text-center">Skills</SectionHeading><div className="text-center"><SkillsList skills={data.skills} variant="inline" /></div></div>}
+    {data.experience.length > 0 && <div className="mb-6"><SectionHeading className="text-center">Experience</SectionHeading><ExperienceBlock experience={data.experience} /></div>}
+    {data.education.length > 0 && <div><SectionHeading className="text-center">Education</SectionHeading><EducationBlock education={data.education} /></div>}
+  </div>
+);
+
+const CreativePreview = ({ data }: { data: ResumeData }) => (
+  <div className="bg-card rounded-xl border border-border/50 card-shadow max-w-2xl mx-auto overflow-hidden">
+    {/* Bold header */}
+    <div className="bg-gradient-to-r from-primary to-accent p-8 text-primary-foreground">
+      <h1 className="text-3xl font-display font-extrabold">{data.name || "Your Name"}</h1>
+      <p className="text-lg font-medium opacity-90 mt-1">{data.title}</p>
+      <div className="flex flex-wrap gap-4 mt-3 text-sm opacity-80">
+        {data.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />{data.email}</span>}
+        {data.phone && <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{data.phone}</span>}
+        {data.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{data.location}</span>}
+      </div>
+    </div>
+    <div className="p-8 space-y-6">
+      {data.summary && <div><SectionHeading>About Me</SectionHeading><p className="text-sm text-muted-foreground leading-relaxed">{data.summary}</p></div>}
+      {data.skills.length > 0 && <div><SectionHeading>Skills</SectionHeading><SkillsList skills={data.skills} /></div>}
+      {data.experience.length > 0 && <div><SectionHeading>Experience</SectionHeading><ExperienceBlock experience={data.experience} /></div>}
+      {data.education.length > 0 && <div><SectionHeading>Education</SectionHeading><EducationBlock education={data.education} /></div>}
+    </div>
+  </div>
+);
+
+const previewMap: Record<TemplateStyle, React.FC<{ data: ResumeData }>> = {
+  classic: ClassicPreview,
+  modern: ModernPreview,
+  minimal: MinimalPreview,
+  creative: CreativePreview,
+};
+
 const ResumeBuilder = () => {
   const [data, setData] = useState<ResumeData>(initialData);
   const [newSkill, setNewSkill] = useState("");
   const [activePanel, setActivePanel] = useState<"edit" | "preview">("edit");
+  const [templateStyle, setTemplateStyle] = useState<TemplateStyle>("classic");
   const { toast } = useToast();
 
   const updateField = useCallback(<K extends keyof ResumeData>(field: K, value: ResumeData[K]) => {
@@ -126,9 +293,34 @@ const ResumeBuilder = () => {
     toast({ title: "Resume exported!", description: "Your resume has been downloaded as PDF." });
   };
 
+  const SelectedPreview = previewMap[templateStyle];
+
   // Edit panel
   const EditPanel = () => (
     <div className="space-y-6 p-4 md:p-6 overflow-y-auto max-h-[calc(100vh-4rem)]">
+      {/* Template Selector */}
+      <div>
+        <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Layout className="w-4 h-4 text-primary" /> Layout Style
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          {templateMeta.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTemplateStyle(t.key)}
+              className={`p-3 rounded-lg border text-left transition-all ${
+                templateStyle === t.key
+                  ? "border-primary bg-primary/10 ring-1 ring-primary"
+                  : "border-border/50 bg-secondary/30 hover:border-primary/40"
+              }`}
+            >
+              <span className="text-xs font-semibold text-foreground block">{t.label}</span>
+              <span className="text-[10px] text-muted-foreground leading-tight block mt-0.5">{t.desc}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div>
         <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
           <Edit3 className="w-4 h-4 text-primary" /> Personal Info
@@ -204,75 +396,6 @@ const ResumeBuilder = () => {
     </div>
   );
 
-  // Preview panel
-  const PreviewPanel = () => (
-    <div id="resume" className="bg-card rounded-xl border border-border/50 card-shadow p-8 md:p-10 max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="border-b-2 border-primary pb-6 mb-6">
-        <h1 className="text-3xl font-display font-bold text-foreground">{data.name || "Your Name"}</h1>
-        <p className="text-lg text-primary font-medium mt-1">{data.title || "Job Title"}</p>
-        <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted-foreground">
-          {data.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />{data.email}</span>}
-          {data.phone && <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{data.phone}</span>}
-          {data.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{data.location}</span>}
-        </div>
-      </div>
-
-      {/* Summary */}
-      {data.summary && (
-        <div className="mb-6">
-          <h2 className="text-sm font-display font-bold text-foreground uppercase tracking-wider mb-2">Summary</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">{data.summary}</p>
-        </div>
-      )}
-
-      {/* Skills */}
-      {data.skills.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-sm font-display font-bold text-foreground uppercase tracking-wider mb-2">Skills</h2>
-          <div className="flex flex-wrap gap-2">
-            {data.skills.map((skill, i) => (
-              <span key={i} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">{skill}</span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Experience */}
-      {data.experience.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-sm font-display font-bold text-foreground uppercase tracking-wider mb-3">Experience</h2>
-          {data.experience.map((exp) => (
-            <div key={exp.id} className="mb-4 last:mb-0">
-              <div className="flex justify-between items-baseline">
-                <h3 className="font-display font-semibold text-foreground text-sm">{exp.title}</h3>
-                <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">{exp.period}</span>
-              </div>
-              <p className="text-sm text-primary font-medium">{exp.company}</p>
-              {exp.description && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{exp.description}</p>}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Education */}
-      {data.education.length > 0 && (
-        <div>
-          <h2 className="text-sm font-display font-bold text-foreground uppercase tracking-wider mb-3">Education</h2>
-          {data.education.map((ed) => (
-            <div key={ed.id} className="mb-3 last:mb-0">
-              <div className="flex justify-between items-baseline">
-                <h3 className="font-display font-semibold text-foreground text-sm">{ed.degree}</h3>
-                <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">{ed.period}</span>
-              </div>
-              <p className="text-sm text-muted-foreground">{ed.school}</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
@@ -329,7 +452,9 @@ const ResumeBuilder = () => {
         <div className={`flex-1 bg-secondary/30 overflow-y-auto p-6 md:p-10 ${
           activePanel === "edit" ? "hidden md:block" : "block"
         }`}>
-          <PreviewPanel />
+          <div id="resume">
+            <SelectedPreview data={data} />
+          </div>
         </div>
       </div>
     </div>
