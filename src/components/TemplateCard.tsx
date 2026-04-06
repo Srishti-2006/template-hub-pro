@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 interface TemplateCardProps {
+  id?: string;
   title: string;
   category: string;
   image: string;
@@ -11,8 +12,15 @@ interface TemplateCardProps {
   views?: number;
 }
 
-const TemplateCard = ({ title, category, image, likes = 0, views = 0 }: TemplateCardProps) => {
+const TemplateCard = ({ id, title, category, image, likes = 0, views = 0 }: TemplateCardProps) => {
   const navigate = useNavigate();
+
+  const handleUseTemplate = () => {
+    if (id) {
+      localStorage.setItem("templateId", id);
+    }
+    navigate("/editor");
+  };
 
   return (
     <motion.div
