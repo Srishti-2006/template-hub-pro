@@ -83,8 +83,50 @@ const Editor = () => {
   const [activeTool, setActiveTool] = useState<string>("select");
   const [isPlaying, setIsPlaying] = useState(false);
   const [timelinePosition, setTimelinePosition] = useState(0);
+  const [templateData, setTemplateData] = useState<{ Title: string; Thumbnail: string; Text: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Load template from Supabase if templateId is in localStorage
+  useEffect(() => {
+    const templateId = localStorage.getItem("templateId");
+    if (!templateId) return;
+    console.log("Template ID:", templateId);
+
+    const getTemplate = async () => {
+      const { data, error } = await supabase
+        .from('Templates')
+        .select('*')
+        .eq('Id', templateId)
+        .maybeSingle();
+
+      if (error) {
+        console.log(error);
+      } else if (data) {
+        console.log("Loaded template:", data);
+        setTemplateData(data);
+        // Set initial canvas elements from template
+        setElements([
+          {
+            id: "template-text",
+            type: "text",
+            x: 200,
+            y: 400,
+            width: 680,
+            height: 80,
+            content: data.Title,
+            color: "hsl(220, 25%, 10%)",
+            fontSize: 64,
+            fontWeight: "bold",
+            textAlign: "center",
+            opacity: 1,
+          },
+        ]);
+        toast({ title: "Template loaded", description: data.Title });
+      }
+    };
+    getTemplate();
+  }, []);
 
   const selected = elements.find((e) => e.id === selectedId);
 
