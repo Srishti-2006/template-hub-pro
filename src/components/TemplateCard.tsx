@@ -12,7 +12,7 @@ interface TemplateCardProps {
   views?: number;
 }
 
-const TemplateCard = ({ id, title, category, image, likes = 0, views = 0 }: TemplateCardProps) => {
+const TemplateCard = React.forwardRef<HTMLDivElement, TemplateCardProps>(({ id, title, category, image, likes = 0, views = 0 }, ref) => {
   const navigate = useNavigate();
 
   const handleUseTemplate = () => {
