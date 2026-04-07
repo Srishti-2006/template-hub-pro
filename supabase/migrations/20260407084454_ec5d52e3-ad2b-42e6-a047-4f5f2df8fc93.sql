@@ -1,0 +1,1 @@
+UPDATE "Templates" SET "Thumbnail" = 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=400&h=500&fit=crop' WHERE "Id" = '951bb177-002a-483e-b2ca-062c30d21c35';
