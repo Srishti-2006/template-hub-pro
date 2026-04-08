@@ -122,9 +122,9 @@ const Editor = () => {
     setSaving(true);
     try {
       if (projectId) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('projects')
-          .update({ title: projectTitle, canvas_data: elements as unknown as Record<string, unknown>[] })
+          .update({ title: projectTitle, canvas_data: JSON.parse(JSON.stringify(elements)) })
           .eq('id', projectId);
         if (error) throw error;
         toast({ title: "Project saved!" });
