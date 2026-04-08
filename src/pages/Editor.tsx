@@ -98,7 +98,7 @@ const Editor = () => {
   useEffect(() => {
     if (!projectId) return;
     const loadProject = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('projects')
         .select('*')
         .eq('id', projectId)
