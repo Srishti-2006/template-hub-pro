@@ -10,6 +10,7 @@ import {
   Square,
   Circle,
   Download,
+  Save,
   Undo2,
   Redo2,
   Trash2,
