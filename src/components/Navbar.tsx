@@ -104,6 +104,8 @@ const Navbar = forwardRef<HTMLElement>((_, ref) => {
       </AnimatePresence>
     </nav>
   );
-};
+});
+
+Navbar.displayName = "Navbar";
 
 export default Navbar;
