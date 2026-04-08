@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   FolderOpen,
   Layout,
@@ -12,15 +14,10 @@ import {
   MoreHorizontal,
   Clock,
   FileText,
-  Video,
-  Image,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-import templateBirthday from "@/assets/template-birthday.jpg";
-import templateTravel from "@/assets/template-travel.jpg";
-import templateResume from "@/assets/template-resume.jpg";
-import templateSocial from "@/assets/template-social.jpg";
+import { useToast } from "@/hooks/use-toast";
 
 const tabs = [
   { key: "projects", label: "My Projects", icon: FolderOpen },
@@ -29,23 +26,65 @@ const tabs = [
   { key: "exports", label: "Export History", icon: Download },
 ];
 
-const mockProjects = [
-  { id: 1, title: "Birthday Video for Mom", type: "video", image: templateBirthday, updatedAt: "2 hours ago", status: "Draft" },
-  { id: 2, title: "Travel Vlog Intro", type: "video", image: templateTravel, updatedAt: "1 day ago", status: "Completed" },
-  { id: 3, title: "My Resume 2026", type: "resume", image: templateResume, updatedAt: "3 days ago", status: "Completed" },
-  { id: 4, title: "Instagram Story Pack", type: "photo", image: templateSocial, updatedAt: "1 week ago", status: "Draft" },
-];
-
-const mockExports = [
-  { id: 1, title: "Birthday Video for Mom", format: "MP4", size: "24.5 MB", date: "Mar 28, 2026" },
-  { id: 2, title: "My Resume 2026", format: "PDF", size: "1.2 MB", date: "Mar 25, 2026" },
-  { id: 3, title: "Instagram Story Pack", format: "PNG", size: "3.8 MB", date: "Mar 20, 2026" },
-];
-
-const typeIcons: Record<string, typeof Video> = { video: Video, photo: Image, resume: FileText };
+interface Project {
+  id: string;
+  title: string;
+  canvas_data: any;
+  template_id: string | null;
+  thumbnail_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("projects");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!user) return;
+    const getProjects = async () => {
+      setLoading(true);
+      const { data, error } = await (supabase as any)
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        console.log("Error fetching projects:", error);
+      } else {
+        setProjects(data || []);
+      }
+      setLoading(false);
+    };
+    getProjects();
+  }, [user]);
+
+  const handleDelete = async (id: string) => {
+    const { error } = await (supabase as any)
+      .from('projects')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+    } else {
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      toast({ title: "Project deleted" });
+    }
+  };
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,10 +114,10 @@ const Dashboard = () => {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
-              { label: "Projects", value: "12", icon: FolderOpen },
-              { label: "Templates", value: "5", icon: Layout },
-              { label: "Saved", value: "28", icon: Bookmark },
-              { label: "Exports", value: "34", icon: Download },
+              { label: "Projects", value: String(projects.length), icon: FolderOpen },
+              { label: "Templates", value: "0", icon: Layout },
+              { label: "Saved", value: "0", icon: Bookmark },
+              { label: "Exports", value: "0", icon: Download },
             ].map((stat) => (
               <motion.div
                 key={stat.label}
@@ -118,102 +157,80 @@ const Dashboard = () => {
           </div>
 
           {/* Content */}
-          {(activeTab === "projects" || activeTab === "templates" || activeTab === "saved") && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {mockProjects.map((project, i) => {
-                const TypeIcon = typeIcons[project.type] || FileText;
-                return (
-                  <motion.div
-                    key={project.id}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="group bg-card rounded-xl border border-border/50 overflow-hidden card-shadow hover:card-shadow-hover transition-shadow"
-                  >
-                    <div className="relative aspect-video overflow-hidden">
-                      <img
-                        src={project.image}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute top-2 right-2">
-                        <button className="w-8 h-8 rounded-full glass-surface flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MoreHorizontal className="w-4 h-4 text-foreground" />
-                        </button>
-                      </div>
-                      <div className="absolute top-2 left-2">
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          project.status === "Completed"
-                            ? "bg-primary/20 text-primary"
-                            : "bg-accent/20 text-accent"
-                        }`}>
-                          {project.status}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-display font-semibold text-foreground text-sm truncate">
-                            {project.title}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                            <TypeIcon className="w-3 h-3" />
-                            <span className="capitalize">{project.type}</span>
-                            <span>·</span>
-                            <Clock className="w-3 h-3" />
-                            <span>{project.updatedAt}</span>
-                          </div>
+          {activeTab === "projects" && (
+            <div>
+              {loading ? (
+                <div className="flex justify-center py-20">
+                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : projects.length === 0 ? (
+                <div className="text-center py-20">
+                  <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-display font-semibold text-foreground mb-2">No projects yet</h3>
+                  <p className="text-muted-foreground mb-4">Create your first project to get started.</p>
+                  <Button asChild>
+                    <Link to="/editor"><Plus className="w-4 h-4 mr-2" />New Project</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {projects.map((project, i) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="group bg-card rounded-xl border border-border/50 overflow-hidden card-shadow hover:card-shadow-hover transition-shadow"
+                    >
+                      <div className="relative aspect-video overflow-hidden bg-secondary flex items-center justify-center">
+                        {project.thumbnail_url ? (
+                          <img
+                            src={project.thumbnail_url}
+                            alt={project.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <FileText className="w-10 h-10 text-muted-foreground" />
+                        )}
+                        <div className="absolute top-2 right-2">
+                          <button
+                            onClick={() => handleDelete(project.id)}
+                            className="w-8 h-8 rounded-full glass-surface flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </button>
                         </div>
                       </div>
-                      <div className="mt-3 flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
-                          <Link to={project.type === "resume" ? "/resume-builder" : "/editor"}>Edit</Link>
-                        </Button>
-                        <Button size="sm" className="flex-1 text-xs">Export</Button>
+                      <div className="p-4">
+                        <h3 className="font-display font-semibold text-foreground text-sm truncate">
+                          {project.title}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          <span>{timeAgo(project.updated_at)}</span>
+                        </div>
+                        <div className="mt-3">
+                          <Button size="sm" className="w-full text-xs" asChild>
+                            <Link to={`/editor?project=${project.id}`}>Edit</Link>
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {(activeTab === "templates" || activeTab === "saved") && (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground">Coming soon.</p>
             </div>
           )}
 
           {activeTab === "exports" && (
-            <div className="bg-card rounded-xl border border-border/50 overflow-hidden card-shadow">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Format</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Size</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                      <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mockExports.map((exp) => (
-                      <tr key={exp.id} className="border-b border-border/50 last:border-0">
-                        <td className="px-4 py-3 text-sm font-medium text-foreground">{exp.title}</td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-secondary text-secondary-foreground">
-                            {exp.format}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{exp.size}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{exp.date}</td>
-                        <td className="px-4 py-3 text-right">
-                          <Button size="sm" variant="ghost" className="text-xs">
-                            <Download className="w-3 h-3 mr-1" />
-                            Download
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div className="text-center py-20">
+              <p className="text-muted-foreground">No exports yet.</p>
             </div>
           )}
         </div>
