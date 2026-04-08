@@ -296,7 +296,12 @@ const Editor = () => {
           <Button variant="ghost" size="icon" asChild>
             <Link to="/dashboard"><ArrowLeft className="w-4 h-4" /></Link>
           </Button>
-          <span className="font-display font-semibold text-foreground text-sm">Template Editor</span>
+          <input
+            value={projectTitle}
+            onChange={(e) => setProjectTitle(e.target.value)}
+            className="font-display font-semibold text-foreground text-sm bg-transparent border-none outline-none w-40 md:w-56 focus:ring-1 focus:ring-primary rounded px-1"
+            placeholder="Project title..."
+          />
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon"><Undo2 className="w-4 h-4" /></Button>
