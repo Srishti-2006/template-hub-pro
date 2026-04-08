@@ -38,6 +38,24 @@ export type Database = {
         }
         Relationships: []
       }
+      Resume: {
+        Row: {
+          created_at: string
+          id: number
+          "No.": string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          "No."?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          "No."?: string
+        }
+        Relationships: []
+      }
       "template-hub-pro": {
         Row: {
           content: string
