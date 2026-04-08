@@ -311,6 +311,10 @@ const Editor = () => {
           <span className="text-xs text-muted-foreground w-12 text-center">{Math.round(zoom * 100)}%</span>
           <Button variant="ghost" size="icon" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}><ZoomIn className="w-4 h-4" /></Button>
           <div className="h-6 w-px bg-border mx-1" />
+          <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
+            <Save className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">{saving ? "Saving..." : "Save"}</span>
+          </Button>
           <Button size="sm" onClick={() => toast({ title: "Exported!", description: "Your design has been downloaded." })}>
             <Download className="w-4 h-4 mr-1" />
             <span className="hidden sm:inline">Export</span>
