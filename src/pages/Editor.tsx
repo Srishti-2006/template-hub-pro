@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
@@ -9,6 +10,7 @@ import {
   Square,
   Circle,
   Download,
+  Save,
   Undo2,
   Redo2,
   Trash2,
@@ -61,6 +63,11 @@ const colorPresets = [
 ];
 
 const Editor = () => {
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const [projectId, setProjectId] = useState<string | null>(searchParams.get("project"));
+  const [projectTitle, setProjectTitle] = useState("Untitled Project");
+  const [saving, setSaving] = useState(false);
   const [elements, setElements] = useState<CanvasElement[]>([
     {
       id: "default-text",
@@ -86,6 +93,57 @@ const Editor = () => {
   const [templateData, setTemplateData] = useState<{ Title: string; Thumbnail: string; Text: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Load existing project from Supabase
+  useEffect(() => {
+    if (!projectId) return;
+    const loadProject = async () => {
+      const { data, error } = await (supabase as any)
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .maybeSingle();
+      if (error) {
+        console.log("Error loading project:", error);
+      } else if (data) {
+        setProjectTitle(data.title);
+        setElements(data.canvas_data as unknown as CanvasElement[]);
+        toast({ title: "Project loaded", description: data.title });
+      }
+    };
+    loadProject();
+  }, [projectId]);
+
+  const handleSave = async () => {
+    if (!user) {
+      toast({ title: "Sign in required", description: "Please log in to save your project.", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    try {
+      if (projectId) {
+        const { error } = await (supabase as any)
+          .from('projects')
+          .update({ title: projectTitle, canvas_data: JSON.parse(JSON.stringify(elements)) })
+          .eq('id', projectId);
+        if (error) throw error;
+        toast({ title: "Project saved!" });
+      } else {
+        const { data, error } = await (supabase as any)
+          .from('projects')
+          .insert({ user_id: user.id, title: projectTitle, canvas_data: JSON.parse(JSON.stringify(elements)), template_id: localStorage.getItem("templateId") || null })
+          .select('id')
+          .single();
+        if (error) throw error;
+        setProjectId(data.id);
+        toast({ title: "Project saved!" });
+      }
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Load template from Supabase if templateId is in localStorage
   useEffect(() => {
@@ -238,7 +296,12 @@ const Editor = () => {
           <Button variant="ghost" size="icon" asChild>
             <Link to="/dashboard"><ArrowLeft className="w-4 h-4" /></Link>
           </Button>
-          <span className="font-display font-semibold text-foreground text-sm">Template Editor</span>
+          <input
+            value={projectTitle}
+            onChange={(e) => setProjectTitle(e.target.value)}
+            className="font-display font-semibold text-foreground text-sm bg-transparent border-none outline-none w-40 md:w-56 focus:ring-1 focus:ring-primary rounded px-1"
+            placeholder="Project title..."
+          />
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon"><Undo2 className="w-4 h-4" /></Button>
@@ -248,6 +311,10 @@ const Editor = () => {
           <span className="text-xs text-muted-foreground w-12 text-center">{Math.round(zoom * 100)}%</span>
           <Button variant="ghost" size="icon" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}><ZoomIn className="w-4 h-4" /></Button>
           <div className="h-6 w-px bg-border mx-1" />
+          <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
+            <Save className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">{saving ? "Saving..." : "Save"}</span>
+          </Button>
           <Button size="sm" onClick={() => toast({ title: "Exported!", description: "Your design has been downloaded." })}>
             <Download className="w-4 h-4 mr-1" />
             <span className="hidden sm:inline">Export</span>
