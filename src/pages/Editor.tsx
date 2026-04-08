@@ -104,24 +104,38 @@ const Editor = () => {
         console.log(error);
       } else if (data) {
         console.log("Loaded template:", data);
+        console.log("Thumbnail:", data.Thumbnail);
         setTemplateData(data);
         // Set initial canvas elements from template
-        setElements([
-          {
-            id: "template-text",
-            type: "text",
-            x: 200,
-            y: 400,
-            width: 680,
-            height: 80,
-            content: data.Title,
-            color: "hsl(220, 25%, 10%)",
-            fontSize: 64,
-            fontWeight: "bold",
-            textAlign: "center",
+        const newElements: CanvasElement[] = [];
+        // Add thumbnail as background image if available
+        if (data.Thumbnail) {
+          newElements.push({
+            id: "template-bg",
+            type: "image",
+            x: 0,
+            y: 0,
+            width: CANVAS_W,
+            height: CANVAS_H,
+            src: data.Thumbnail,
             opacity: 1,
-          },
-        ]);
+          });
+        }
+        newElements.push({
+          id: "template-text",
+          type: "text",
+          x: 200,
+          y: 400,
+          width: 680,
+          height: 80,
+          content: data.Title,
+          color: "hsl(0, 0%, 100%)",
+          fontSize: 64,
+          fontWeight: "bold",
+          textAlign: "center",
+          opacity: 1,
+        });
+        setElements(newElements);
         toast({ title: "Template loaded", description: data.Title });
       }
     };
