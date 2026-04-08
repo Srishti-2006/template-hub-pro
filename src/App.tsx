@@ -30,7 +30,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/resume-builder" element={<ProtectedRoute><ResumeBuilder /></ProtectedRoute>} />
-            <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
+            <Route path="/editor" element={<Editor />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
