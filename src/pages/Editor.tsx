@@ -63,6 +63,11 @@ const colorPresets = [
 ];
 
 const Editor = () => {
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const [projectId, setProjectId] = useState<string | null>(searchParams.get("project"));
+  const [projectTitle, setProjectTitle] = useState("Untitled Project");
+  const [saving, setSaving] = useState(false);
   const [elements, setElements] = useState<CanvasElement[]>([
     {
       id: "default-text",
@@ -88,6 +93,57 @@ const Editor = () => {
   const [templateData, setTemplateData] = useState<{ Title: string; Thumbnail: string; Text: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Load existing project from Supabase
+  useEffect(() => {
+    if (!projectId) return;
+    const loadProject = async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .maybeSingle();
+      if (error) {
+        console.log("Error loading project:", error);
+      } else if (data) {
+        setProjectTitle(data.title);
+        setElements(data.canvas_data as unknown as CanvasElement[]);
+        toast({ title: "Project loaded", description: data.title });
+      }
+    };
+    loadProject();
+  }, [projectId]);
+
+  const handleSave = async () => {
+    if (!user) {
+      toast({ title: "Sign in required", description: "Please log in to save your project.", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    try {
+      if (projectId) {
+        const { error } = await supabase
+          .from('projects')
+          .update({ title: projectTitle, canvas_data: elements as unknown as Record<string, unknown>[] })
+          .eq('id', projectId);
+        if (error) throw error;
+        toast({ title: "Project saved!" });
+      } else {
+        const { data, error } = await supabase
+          .from('projects')
+          .insert({ user_id: user.id, title: projectTitle, canvas_data: elements as unknown as Record<string, unknown>[], template_id: localStorage.getItem("templateId") || null })
+          .select('id')
+          .single();
+        if (error) throw error;
+        setProjectId(data.id);
+        toast({ title: "Project saved!" });
+      }
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Load template from Supabase if templateId is in localStorage
   useEffect(() => {
