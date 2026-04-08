@@ -129,9 +129,9 @@ const Editor = () => {
         if (error) throw error;
         toast({ title: "Project saved!" });
       } else {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('projects')
-          .insert({ user_id: user.id, title: projectTitle, canvas_data: elements as unknown as Record<string, unknown>[], template_id: localStorage.getItem("templateId") || null })
+          .insert({ user_id: user.id, title: projectTitle, canvas_data: JSON.parse(JSON.stringify(elements)), template_id: localStorage.getItem("templateId") || null })
           .select('id')
           .single();
         if (error) throw error;
