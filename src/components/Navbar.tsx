@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Sparkles, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-const Navbar = () => {
+const Navbar = forwardRef<HTMLElement>((_, ref) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -26,7 +26,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-surface border-b border-border/50">
+    <nav ref={ref} className="fixed top-0 left-0 right-0 z-50 glass-surface border-b border-border/50">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-hero-gradient flex items-center justify-center">
@@ -104,6 +104,8 @@ const Navbar = () => {
       </AnimatePresence>
     </nav>
   );
-};
+});
+
+Navbar.displayName = "Navbar";
 
 export default Navbar;
