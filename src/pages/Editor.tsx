@@ -146,6 +146,15 @@ const Editor = () => {
     }
   };
 
+  // Auto-save every 30 seconds
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      handleSave();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [user, elements, projectTitle, projectId]);
+
   // Load template from Supabase if templateId is in localStorage
   useEffect(() => {
     const templateId = localStorage.getItem("templateId");
