@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import html2canvas from "html2canvas";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
