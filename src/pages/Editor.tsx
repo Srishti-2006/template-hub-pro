@@ -36,7 +36,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+
+const fontFamilies = [
+  { label: "Plus Jakarta Sans", value: '"Plus Jakarta Sans", system-ui, sans-serif' },
+  { label: "DM Sans", value: '"DM Sans", sans-serif' },
+  { label: "Georgia", value: "Georgia, serif" },
+  { label: "Courier New", value: '"Courier New", monospace' },
+  { label: "Impact", value: "Impact, sans-serif" },
+  { label: "Times New Roman", value: '"Times New Roman", serif' },
+  { label: "Arial", value: "Arial, Helvetica, sans-serif" },
+  { label: "Verdana", value: "Verdana, sans-serif" },
+];
+
+const textShadowPresets = [
+  { label: "None", value: "none" },
+  { label: "Drop Shadow", value: "2px 2px 4px rgba(0,0,0,0.5)" },
+  { label: "Hard Shadow", value: "3px 3px 0px rgba(0,0,0,0.8)" },
+  { label: "Glow", value: "0 0 10px rgba(255,255,255,0.8)" },
+  { label: "Neon", value: "0 0 5px #fff, 0 0 10px #fff, 0 0 20px hsl(174, 62%, 47%)" },
+  { label: "Outline", value: "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000" },
+];
+
 
 type ElementType = "text" | "image" | "rect" | "circle";
 
