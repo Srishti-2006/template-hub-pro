@@ -464,8 +464,12 @@ const Editor = () => {
                         fontWeight: el.fontWeight,
                         fontStyle: el.fontStyle,
                         textAlign: el.textAlign as any,
-                        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-                        lineHeight: 1.2,
+                        fontFamily: el.fontFamily || '"Plus Jakarta Sans", system-ui, sans-serif',
+                        lineHeight: el.lineHeight ?? 1.2,
+                        letterSpacing: el.letterSpacing ? `${el.letterSpacing}px` : undefined,
+                        textDecoration: el.textDecoration || "none",
+                        textTransform: (el.textTransform as any) || "none",
+                        textShadow: el.textShadow && el.textShadow !== "none" ? el.textShadow : undefined,
                       }}
                     >
                       {el.content}
