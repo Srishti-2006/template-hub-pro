@@ -560,11 +560,34 @@ const Editor = () => {
               {/* Text options */}
               {selected.type === "text" && (
                 <>
+                  {/* Font Family */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Font Family</p>
+                    <Select
+                      value={selected.fontFamily || '"Plus Jakarta Sans", system-ui, sans-serif'}
+                      onValueChange={(v) => updateElement(selected.id, { fontFamily: v })}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontFamilies.map((f) => (
+                          <SelectItem key={f.label} value={f.value} style={{ fontFamily: f.value }}>
+                            {f.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Font Size */}
                   <div>
                     <p className="text-xs text-muted-foreground mb-2">Font Size</p>
                     <Input type="number" value={selected.fontSize} onChange={(e) => updateElement(selected.id, { fontSize: Number(e.target.value) })} className="h-8 text-xs" />
                   </div>
-                  <div className="flex gap-1">
+
+                  {/* Style toggles */}
+                  <div className="flex gap-1 flex-wrap">
                     <button onClick={() => updateElement(selected.id, { fontWeight: selected.fontWeight === "bold" ? "normal" : "bold" })}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center ${selected.fontWeight === "bold" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
                       <Bold className="w-3.5 h-3.5" />
@@ -572,6 +595,10 @@ const Editor = () => {
                     <button onClick={() => updateElement(selected.id, { fontStyle: selected.fontStyle === "italic" ? "normal" : "italic" })}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center ${selected.fontStyle === "italic" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
                       <Italic className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => updateElement(selected.id, { textDecoration: selected.textDecoration === "underline" ? "none" : "underline" })}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${selected.textDecoration === "underline" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                      <Underline className="w-3.5 h-3.5" />
                     </button>
                     <button onClick={() => updateElement(selected.id, { textAlign: "left" })}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center ${selected.textAlign === "left" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
@@ -581,6 +608,68 @@ const Editor = () => {
                       className={`w-8 h-8 rounded-lg flex items-center justify-center ${selected.textAlign === "center" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
                       <AlignCenter className="w-3.5 h-3.5" />
                     </button>
+                    <button onClick={() => updateElement(selected.id, { textAlign: "right" })}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${selected.textAlign === "right" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                      <AlignRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Text Transform */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Text Transform</p>
+                    <div className="flex gap-1">
+                      {(["none", "uppercase", "lowercase", "capitalize"] as const).map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => updateElement(selected.id, { textTransform: t })}
+                          className={`h-7 px-2 rounded-md text-[10px] font-medium ${(selected.textTransform || "none") === t ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
+                        >
+                          {t === "none" ? "Aa" : t === "uppercase" ? "AA" : t === "lowercase" ? "aa" : "Aa."}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Letter Spacing */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Letter Spacing</p>
+                    <Slider
+                      value={[selected.letterSpacing ?? 0]}
+                      min={-5} max={20} step={0.5}
+                      onValueChange={([v]) => updateElement(selected.id, { letterSpacing: v })}
+                    />
+                    <span className="text-[10px] text-muted-foreground">{selected.letterSpacing ?? 0}px</span>
+                  </div>
+
+                  {/* Line Height */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Line Height</p>
+                    <Slider
+                      value={[(selected.lineHeight ?? 1.2) * 10]}
+                      min={8} max={30} step={1}
+                      onValueChange={([v]) => updateElement(selected.id, { lineHeight: v / 10 })}
+                    />
+                    <span className="text-[10px] text-muted-foreground">{(selected.lineHeight ?? 1.2).toFixed(1)}</span>
+                  </div>
+
+                  {/* Text Shadow */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Text Shadow</p>
+                    <Select
+                      value={selected.textShadow || "none"}
+                      onValueChange={(v) => updateElement(selected.id, { textShadow: v })}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {textShadowPresets.map((s) => (
+                          <SelectItem key={s.label} value={s.value}>
+                            {s.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}
