@@ -50,6 +50,12 @@ interface CanvasElement {
   fontWeight?: string;
   fontStyle?: string;
   textAlign?: string;
+  fontFamily?: string;
+  letterSpacing?: number;
+  lineHeight?: number;
+  textDecoration?: string;
+  textTransform?: string;
+  textShadow?: string;
   src?: string;
   opacity?: number;
 }
