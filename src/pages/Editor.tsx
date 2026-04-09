@@ -21,14 +21,17 @@ import {
   Palette,
   Bold,
   Italic,
+  Underline,
   AlignLeft,
   AlignCenter,
+  AlignRight,
   Layers,
   Music,
   Play,
   Pause,
   SkipBack,
   SkipForward,
+  CaseSensitive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
