@@ -316,7 +316,24 @@ const Editor = () => {
             <Save className="w-4 h-4 mr-1" />
             <span className="hidden sm:inline">{saving ? "Saving..." : "Save"}</span>
           </Button>
-          <Button size="sm" onClick={() => toast({ title: "Exported!", description: "Your design has been downloaded." })}>
+          <Button size="sm" onClick={async () => {
+            if (!canvasRef.current) return;
+            try {
+              // Temporarily remove transform for accurate capture
+              const el = canvasRef.current;
+              const origTransform = el.style.transform;
+              el.style.transform = "scale(1)";
+              const canvas = await html2canvas(el, { useCORS: true, allowTaint: true, scale: 2 });
+              el.style.transform = origTransform;
+              const link = document.createElement("a");
+              link.download = `${projectTitle || "template"}.png`;
+              link.href = canvas.toDataURL("image/png");
+              link.click();
+              toast({ title: "Exported!", description: "Your design has been downloaded." });
+            } catch (err: any) {
+              toast({ title: "Export failed", description: err.message, variant: "destructive" });
+            }
+          }}>
             <Download className="w-4 h-4 mr-1" />
             <span className="hidden sm:inline">Export</span>
           </Button>
