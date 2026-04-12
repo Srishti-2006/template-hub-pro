@@ -139,6 +139,16 @@ const Editor = () => {
     loadProject();
   }, [projectId]);
 
+  // Load Google Fonts used by elements
+  useEffect(() => {
+    elements.forEach((el) => {
+      if (el.fontFamily) {
+        const name = getFontNameFromValue(el.fontFamily);
+        loadGoogleFont(name);
+      }
+    });
+  }, [elements]);
+
   const handleSave = async () => {
     if (!user) {
       toast({ title: "Sign in required", description: "Please log in to save your project.", variant: "destructive" });
