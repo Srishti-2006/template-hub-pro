@@ -51,6 +51,16 @@ const textShadowPresets = [
   { label: "Outline", value: "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000" },
 ];
 
+  // Load Google Fonts used by elements
+  useEffect(() => {
+    elements.forEach((el) => {
+      if (el.fontFamily) {
+        const name = getFontNameFromValue(el.fontFamily);
+        loadGoogleFont(name);
+      }
+    });
+  }, [elements]);
+
 
 type ElementType = "text" | "image" | "rect" | "circle";
 
