@@ -183,15 +183,33 @@ const Dashboard = () => {
                       className="group bg-card rounded-xl border border-border/50 overflow-hidden card-shadow hover:card-shadow-hover transition-shadow"
                     >
                       <div className="relative aspect-video overflow-hidden bg-secondary flex items-center justify-center">
-                        {project.thumbnail_url ? (
-                          <img
-                            src={project.thumbnail_url}
-                            alt={project.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <FileText className="w-10 h-10 text-muted-foreground" />
-                        )}
+                        {(() => {
+                          const canvasArr = Array.isArray(project.canvas_data) ? project.canvas_data : [];
+                          const imgEl = canvasArr.find((el: any) => el.type === "image" && el.src);
+                          const textEl = canvasArr.find((el: any) => el.type === "text" && el.content);
+                          const thumb = project.thumbnail_url || (imgEl as any)?.src;
+
+                          return thumb ? (
+                            <div className="relative w-full h-full">
+                              <img
+                                src={thumb}
+                                alt={project.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                              {textEl && (
+                                <p className="absolute bottom-2 left-2 right-2 text-xs text-white bg-black/50 rounded px-2 py-1 truncate">
+                                  {(textEl as any).content}
+                                </p>
+                              )}
+                            </div>
+                          ) : textEl ? (
+                            <p className="text-sm text-muted-foreground px-4 text-center truncate">
+                              {(textEl as any).content}
+                            </p>
+                          ) : (
+                            <FileText className="w-10 h-10 text-muted-foreground" />
+                          );
+                        })()}
                         <div className="absolute top-2 right-2">
                           <button
                             onClick={() => handleDelete(project.id)}
