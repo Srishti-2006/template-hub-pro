@@ -37,18 +37,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GoogleFontPicker } from "@/components/GoogleFontPicker";
+import { loadGoogleFont, getFontNameFromValue } from "@/lib/google-fonts";
 import { useToast } from "@/hooks/use-toast";
 
-const fontFamilies = [
-  { label: "Plus Jakarta Sans", value: '"Plus Jakarta Sans", system-ui, sans-serif' },
-  { label: "DM Sans", value: '"DM Sans", sans-serif' },
-  { label: "Georgia", value: "Georgia, serif" },
-  { label: "Courier New", value: '"Courier New", monospace' },
-  { label: "Impact", value: "Impact, sans-serif" },
-  { label: "Times New Roman", value: '"Times New Roman", serif' },
-  { label: "Arial", value: "Arial, Helvetica, sans-serif" },
-  { label: "Verdana", value: "Verdana, sans-serif" },
-];
 
 const textShadowPresets = [
   { label: "None", value: "none" },
@@ -58,6 +50,7 @@ const textShadowPresets = [
   { label: "Neon", value: "0 0 5px #fff, 0 0 10px #fff, 0 0 20px hsl(174, 62%, 47%)" },
   { label: "Outline", value: "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000" },
 ];
+
 
 
 type ElementType = "text" | "image" | "rect" | "circle";
@@ -145,6 +138,16 @@ const Editor = () => {
     };
     loadProject();
   }, [projectId]);
+
+  // Load Google Fonts used by elements
+  useEffect(() => {
+    elements.forEach((el) => {
+      if (el.fontFamily) {
+        const name = getFontNameFromValue(el.fontFamily);
+        loadGoogleFont(name);
+      }
+    });
+  }, [elements]);
 
   const handleSave = async () => {
     if (!user) {
@@ -560,25 +563,14 @@ const Editor = () => {
               {/* Text options */}
               {selected.type === "text" && (
                 <>
-                  {/* Font Family */}
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2">Font Family</p>
-                    <Select
-                      value={selected.fontFamily || '"Plus Jakarta Sans", system-ui, sans-serif'}
-                      onValueChange={(v) => updateElement(selected.id, { fontFamily: v })}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {fontFamilies.map((f) => (
-                          <SelectItem key={f.label} value={f.value} style={{ fontFamily: f.value }}>
-                            {f.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                   {/* Font Family */}
+                   <div>
+                     <p className="text-xs text-muted-foreground mb-2">Font Family</p>
+                     <GoogleFontPicker
+                       value={selected.fontFamily || '"Plus Jakarta Sans", system-ui, sans-serif'}
+                       onChange={(v) => updateElement(selected.id, { fontFamily: v })}
+                     />
+                   </div>
 
                   {/* Font Size */}
                   <div>
