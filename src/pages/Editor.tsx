@@ -149,6 +149,42 @@ const Editor = () => {
     });
   }, [elements]);
 
+  const generateThumbnail = async (): Promise<string | null> => {
+    if (!canvasRef.current || !user) return null;
+    try {
+      const el = canvasRef.current;
+      const origTransform = el.style.transform;
+      el.style.transform = "none";
+      const canvas = await html2canvas(el, { useCORS: true, allowTaint: true, scale: 0.5 });
+      el.style.transform = origTransform;
+
+      // Convert to blob
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/jpeg", 0.7)
+      );
+      if (!blob) return null;
+
+      const filePath = `${user.id}/${projectId || crypto.randomUUID()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("project-thumbnails")
+        .upload(filePath, blob, { upsert: true, contentType: "image/jpeg" });
+
+      if (uploadError) {
+        console.error("Thumbnail upload error:", uploadError);
+        return null;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("project-thumbnails")
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (err) {
+      console.error("Thumbnail generation failed:", err);
+      return null;
+    }
+  };
+
   const handleSave = async () => {
     if (!user) {
       toast({ title: "Sign in required", description: "Please log in to save your project.", variant: "destructive" });
@@ -156,17 +192,24 @@ const Editor = () => {
     }
     setSaving(true);
     try {
+      const thumbnailUrl = await generateThumbnail();
+      const payload: any = {
+        title: projectTitle,
+        canvas_data: JSON.parse(JSON.stringify(elements)),
+      };
+      if (thumbnailUrl) payload.thumbnail_url = thumbnailUrl;
+
       if (projectId) {
         const { error } = await (supabase as any)
           .from('projects')
-          .update({ title: projectTitle, canvas_data: JSON.parse(JSON.stringify(elements)) })
+          .update(payload)
           .eq('id', projectId);
         if (error) throw error;
         toast({ title: "Project saved!" });
       } else {
         const { data, error } = await (supabase as any)
           .from('projects')
-          .insert({ user_id: user.id, title: projectTitle, canvas_data: JSON.parse(JSON.stringify(elements)), template_id: localStorage.getItem("templateId") || null })
+          .insert({ ...payload, user_id: user.id, template_id: localStorage.getItem("templateId") || null })
           .select('id')
           .single();
         if (error) throw error;
